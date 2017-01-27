@@ -1,4 +1,4 @@
-import os
+import os, sys
 from threading import Thread
 from time import sleep
 from subprocess import Popen, PIPE
@@ -18,7 +18,12 @@ class ProcessGuard(object):
     def __init__(self, watchdog, config):
         execFile = config["binary"]
         self.execFile = execFile if os.path.isabs(execFile) else os.path.join(wdutils.getScriptDir(), execFile)
-        self.stateFile = watchdog.currentDir + cfg.getOption('subprocess', 'statefile')
+
+        if not os.path.isfile(self.execFile):
+            logger.error("Subprocess binary does not exists '{0}'".format(self.execFile))
+            sys.exit(-1)
+
+        self.stateFile = watchdog.currentDir + config["name"] + "." + cfg.getOption('subprocess', 'statefile')
         self.subprocessName = cfg.getOption('subprocess', 'name')
         self.checkInterval = cfg.getOption('pg', 'check_interval_sec')
         self.maxStopTimeout = cfg.getOption('subprocess', 'max_stop_timeout')
@@ -31,7 +36,7 @@ class ProcessGuard(object):
         self.config = config
         self.subprocess = None
         self.setInitialState()
-	os.environ['LD_LIBRARY_PATH'] = os.path.dirname(self.execFile)
+	os.environ['LD_LIBRARY_PATH'] += ":" + os.path.dirname(self.execFile)
 
     def setInitialState(self):
         """
