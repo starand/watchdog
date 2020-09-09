@@ -36,7 +36,9 @@ class ProcessGuard(object):
         self.config = config
         self.subprocess = None
         self.setInitialState()
-	os.environ['LD_LIBRARY_PATH'] += ":" + os.path.dirname(self.execFile)
+    
+        os.environ['LD_LIBRARY_PATH'] = os.getcwd()
+        os.environ['LD_LIBRARY_PATH'] += ":" + os.path.dirname(self.execFile)
 
     def setInitialState(self):
         """
